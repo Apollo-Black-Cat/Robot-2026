@@ -17,13 +17,26 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShootingCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.conveyor.Conveyor;
+import frc.robot.subsystems.conveyor.ConveyorIO;
+import frc.robot.subsystems.conveyor.ConveyorIOSim;
+import frc.robot.subsystems.conveyor.ConveyorIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -35,6 +48,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Intake intake;
+  private final Conveyor conveyor;
+  private final Shooter shooter;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -56,6 +72,9 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
+        intake = new Intake(new IntakeIOTalonFX());
+        conveyor = new Conveyor(new ConveyorIOTalonFX());
+        shooter = new Shooter(new ShooterIOTalonFX());
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -85,6 +104,9 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
+        intake = new Intake(new IntakeIOSim());
+        conveyor = new Conveyor(new ConveyorIOSim());
+        shooter = new Shooter(new ShooterIOSim());
         break;
 
       default:
@@ -96,6 +118,9 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        intake = new Intake(new IntakeIO() {});
+        conveyor = new Conveyor(new ConveyorIO() {});
+        shooter = new Shooter(new ShooterIO() {});
         break;
     }
 
@@ -156,7 +181,7 @@ public class RobotContainer {
             DriveCommands.joystickDriveAimAtHub(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
 
-    // Reset gyro to 0° when B button is pressed
+    // Reset gyro to 0° when B button is pressed
     controller
         .b()
         .onTrue(
@@ -166,6 +191,25 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    // Extend + run rollers while right bumper is held; retract on release
+    // Conveyor runs BACKWARD simultaneously to retain balls inside the robot
+    controller
+        .rightBumper()
+        .whileTrue(ShootingCommands.intakeWithRetainCommand(intake, conveyor))
+        .onFalse(ShootingCommands.retractAndStopCommand(intake, conveyor));
+
+    // Eject (reverse rollers) while left bumper is held
+    controller.leftBumper().whileTrue(intake.ejectCommand());
+
+    // Shoot sequence while Y button is held:
+    //   - Flywheel spins up immediately
+    //   - After 0.5 s: feeder + conveyor forward feed the ball into the flywheel
+    // Everything stops on release
+    controller
+        .y()
+        .whileTrue(ShootingCommands.shootSequenceCommand(shooter, conveyor))
+        .onFalse(ShootingCommands.stopShooterSystem(shooter, conveyor));
   }
 
   /**
