@@ -7,8 +7,8 @@
 
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -40,8 +40,8 @@ public class Shooter extends SubsystemBase {
   private final ShooterIO io;
   private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
-  private double flywheelGoalVolts = 0.0;
-  private double feederGoalVolts = 0.0;
+  private double shooterGoalVolts = 0.0;
+  private double indexerGoalVolts = 0.0;
 
   public Shooter(ShooterIO io) {
     this.io = io;
@@ -52,12 +52,24 @@ public class Shooter extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
 
-    io.setFlywheelVoltage(flywheelGoalVolts);
-    io.setFeederVoltage(feederGoalVolts);
+    io.setShooterVoltage(shooterGoalVolts);
+    io.setIndexerVoltage(indexerGoalVolts);
 
-    Logger.recordOutput("Shooter/FlywheelGoalVolts", flywheelGoalVolts);
-    Logger.recordOutput("Shooter/FeederGoalVolts", feederGoalVolts);
+    Logger.recordOutput("Shooter/FlywheelGoalVolts", shooterGoalVolts);
+    Logger.recordOutput("Shooter/FeederGoalVolts", indexerGoalVolts);
     Logger.recordOutput("Shooter/FlywheelAtSpeed", isFlywheelAtSpeed());
+  }
+
+  public void activateShoot(Boolean isOn) {
+    io.setShooterVoltage(Constants.ShooterConstants.FLYWHEEL_SHOOT_VOLTS);
+  }
+
+  public void activateIndexer(Boolean isOn) {
+    io.setIndexerVoltage(Constants.ShooterConstants.FEEDER_SHOOT_VOLTS);
+  }
+
+  public void stopMotors() {
+    io.stopMotors();
   }
 
   // ---------------------------------------------------------------------------
@@ -69,14 +81,14 @@ public class Shooter extends SubsystemBase {
    * target speed for shooting.
    */
   public boolean isFlywheelAtSpeed() {
-    return Math.abs(inputs.flywheelVelocityRadPerSec)
+    return Math.abs(inputs.leftShooterVelocityRadPerSec)
         >= ShooterConstants.FLYWHEEL_TARGET_RAD_PER_SEC
             * (1.0 - ShooterConstants.FLYWHEEL_TOLERANCE_PERCENT);
   }
 
   /** Returns the current flywheel velocity in rad/s. */
   public double getFlywheelVelocityRadPerSec() {
-    return inputs.flywheelVelocityRadPerSec;
+    return inputs.leftShooterVelocityRadPerSec;
   }
 
   // ---------------------------------------------------------------------------
@@ -87,10 +99,11 @@ public class Shooter extends SubsystemBase {
    * Spins up only the flywheel to shooting speed. The feeder stays OFF. Use this while waiting for
    * the robot to align before shooting. Stops when interrupted.
    */
+  /*
   public Command spinUpFlywheelCommand() {
     return this.startEnd(
         () -> {
-          flywheelGoalVolts = ShooterConstants.FLYWHEEL_SHOOT_VOLTS;
+          leftShooterGoalVolts = ShooterConstants.FLYWHEEL_SHOOT_VOLTS;
           feederGoalVolts = 0.0;
         },
         () -> {
@@ -98,6 +111,7 @@ public class Shooter extends SubsystemBase {
           feederGoalVolts = 0.0;
         });
   }
+         */
 
   /**
    * Runs the feeder (internal roller) at feeding voltage. Intended to be used <em>after</em> the
@@ -105,10 +119,12 @@ public class Shooter extends SubsystemBase {
    * #spinUpFlywheelCommand()} or {@link #shootCommand()} for the full sequence. Stops when
    * interrupted.
    */
+  /*
   public Command runFeederCommand() {
     return this.startEnd(
         () -> feederGoalVolts = ShooterConstants.FEEDER_SHOOT_VOLTS, () -> feederGoalVolts = 0.0);
   }
+        */
 
   /**
    * Full shoot sequence (convenience command):
@@ -120,6 +136,8 @@ public class Shooter extends SubsystemBase {
    *
    * Both motors keep running until the command is interrupted.
    */
+
+  /*
   public Command shootCommand() {
     return this.startEnd(
             () -> flywheelGoalVolts = ShooterConstants.FLYWHEEL_SHOOT_VOLTS,
@@ -135,8 +153,10 @@ public class Shooter extends SubsystemBase {
                     edu.wpi.first.wpilibj2.command.Commands.runOnce(
                         () -> feederGoalVolts = ShooterConstants.FEEDER_SHOOT_VOLTS)));
   }
+                        */
 
   /** Stops both flywheel and feeder immediately. */
+  /*
   public Command stopCommand() {
     return this.runOnce(
         () -> {
@@ -144,4 +164,5 @@ public class Shooter extends SubsystemBase {
           feederGoalVolts = 0.0;
         });
   }
+        */
 }

@@ -35,5 +35,7 @@ public interface ConveyorIO {
   public default void updateInputs(ConveyorIOInputs inputs) {}
 
   /** Run the conveyor at the specified open-loop voltage (-12 to 12 V). */
-  public default void setVoltage(double volts) {}
+  public default void setVoltage() {}
+
+  public default void stopMotor() {}
 }

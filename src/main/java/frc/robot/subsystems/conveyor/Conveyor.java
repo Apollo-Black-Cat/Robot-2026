@@ -41,9 +41,15 @@ public class Conveyor extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Conveyor", inputs);
 
-    io.setVoltage(goalVolts);
-
     Logger.recordOutput("Conveyor/GoalVolts", goalVolts);
+  }
+
+  public void setVoltage() {
+    io.setVoltage();
+  }
+
+  public void stopMotor() {
+    io.stopMotor();
   }
 
   // ---------------------------------------------------------------------------

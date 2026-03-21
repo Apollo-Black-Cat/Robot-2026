@@ -25,25 +25,39 @@ public interface ShooterIO {
 
   @AutoLog
   public static class ShooterIOInputs {
-    // ---- Flywheel ----
-    public boolean flywheelConnected = false;
-    public double flywheelVelocityRadPerSec = 0.0;
-    public double flywheelAppliedVolts = 0.0;
-    public double flywheelCurrentAmps = 0.0;
+    // ---- left indexer ----
+    public boolean leftIndexerConnected = false;
+    public double leftIndexerVelocityRadPerSec = 0.0;
+    public double leftIndexerAppliedVolts = 0.0;
+    public double leftIndexerCurrentAmps = 0.0;
 
-    // ---- Feeder ----
-    public boolean feederConnected = false;
-    public double feederVelocityRadPerSec = 0.0;
-    public double feederAppliedVolts = 0.0;
-    public double feederCurrentAmps = 0.0;
+    // ---- right indexer ----
+    public boolean rightIndexerConnected = false;
+    public double rightIndexerVelocityRadPerSec = 0.0;
+    public double rightIndexerAppliedVolts = 0.0;
+    public double rightIndexerCurrentAmps = 0.0;
+
+    // ---- left shooter ----
+    public boolean leftShooterConnected = false;
+    public double leftShooterVelocityRadPerSec = 0.0;
+    public double leftShooterAppliedVolts = 0.0;
+    public double leftShooterCurrentAmps = 0.0;
+
+    // ---- right shooter ----
+    public boolean rightShooterConnected = false;
+    public double rightShooterVelocityRadPerSec = 0.0;
+    public double rightShooterAppliedVolts = 0.0;
+    public double rightShooterCurrentAmps = 0.0;
   }
 
   /** Updates the set of loggable inputs. */
   public default void updateInputs(ShooterIOInputs inputs) {}
 
   /** Run the flywheel at the specified open-loop voltage (-12 to 12 V). */
-  public default void setFlywheelVoltage(double volts) {}
+  public default void setShooterVoltage(double volts) {}
 
   /** Run the feeder at the specified open-loop voltage (-12 to 12 V). */
-  public default void setFeederVoltage(double volts) {}
+  public default void setIndexerVoltage(double volts) {}
+
+  public default void stopMotors() {}
 }

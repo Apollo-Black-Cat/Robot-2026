@@ -9,8 +9,10 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.IntakeConstants;
 
@@ -40,12 +42,22 @@ public class IntakeIOSim implements IntakeIO {
   private static final double METERS_PER_ROTATION =
       Math.PI * IntakeConstants.PINION_DIAMETER_METERS / IntakeConstants.EXTENSION_GEAR_RATIO;
 
-  private final DCMotorSim extensionSim;
-  private boolean extensionClosedLoop = false;
-  private double extensionSetpointRotations = 0.0;
-  private final PIDController extensionController =
+  private final ProfiledPIDController m_conController =
+      new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(1.5, 1.0));
+
+  private final DCMotorSim extensionLeftSim;
+  private boolean extensionLeftClosedLoop = false;
+  private double extensionLeftSetpointRotations = 0.0;
+  private final PIDController extensionLeftController =
       new PIDController(EXTENSION_KP, 0, EXTENSION_KD);
-  private double extensionAppliedVolts = 0.0;
+  private double extensionLeftAppliedVolts = 0.0;
+
+  private final DCMotorSim extensionRightSim;
+  private boolean extensionRightClosedLoop = false;
+  private double extensionRightSetpointRotations = 0.0;
+  private final PIDController extensionRightController =
+      new PIDController(EXTENSION_KP, 0, EXTENSION_KD);
+  private double extensionRightAppliedVolts = 0.0;
 
   public IntakeIOSim() {
     rollerSim =
@@ -53,7 +65,13 @@ public class IntakeIOSim implements IntakeIO {
             LinearSystemId.createDCMotorSystem(ROLLER_GEARBOX, ROLLER_MOI, ROLLER_GEAR_RATIO),
             ROLLER_GEARBOX);
 
-    extensionSim =
+    extensionLeftSim =
+        new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(
+                EXTENSION_GEARBOX, EXTENSION_MOI, IntakeConstants.EXTENSION_GEAR_RATIO),
+            EXTENSION_GEARBOX);
+
+    extensionRightSim =
         new DCMotorSim(
             LinearSystemId.createDCMotorSystem(
                 EXTENSION_GEARBOX, EXTENSION_MOI, IntakeConstants.EXTENSION_GEAR_RATIO),
@@ -63,19 +81,21 @@ public class IntakeIOSim implements IntakeIO {
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
     // ---- Extension closed-loop control ----
-    if (extensionClosedLoop) {
-      extensionAppliedVolts =
-          extensionController.calculate(
-              extensionSim.getAngularPositionRotations(), extensionSetpointRotations);
+    if (extensionLeftClosedLoop) {
+      extensionLeftAppliedVolts =
+          extensionLeftController.calculate(
+              extensionLeftSim.getAngularPositionRotations(), extensionLeftSetpointRotations);
     } else {
-      extensionController.reset();
+      extensionLeftController.reset();
     }
 
     // Step simulations
     rollerSim.setInputVoltage(MathUtil.clamp(rollerAppliedVolts, -12.0, 12.0));
-    extensionSim.setInputVoltage(MathUtil.clamp(extensionAppliedVolts, -12.0, 12.0));
+    extensionLeftSim.setInputVoltage(MathUtil.clamp(extensionLeftAppliedVolts, -12.0, 12.0));
+    extensionRightSim.setInputVoltage(MathUtil.clamp(extensionRightAppliedVolts, -12.0, 12.0));
     rollerSim.update(0.02);
-    extensionSim.update(0.02);
+    extensionLeftSim.update(0.02);
+    extensionRightSim.update(0.02);
 
     // ---- Roller inputs ----
     inputs.rollerConnected = true;
@@ -86,22 +106,30 @@ public class IntakeIOSim implements IntakeIO {
     // ---- Extension inputs ----
     double extensionPosMeters =
         MathUtil.clamp(
-            extensionSim.getAngularPositionRotations() * METERS_PER_ROTATION,
+            extensionLeftSim.getAngularPositionRotations() * METERS_PER_ROTATION,
             0.0,
             IntakeConstants.MAX_EXTENSION_METERS);
-    inputs.extensionConnected = true;
-    inputs.extensionPositionMeters = extensionPosMeters;
-    inputs.extensionVelocityMetersPerSec =
-        extensionSim.getAngularVelocityRadPerSec() * METERS_PER_ROTATION / (2.0 * Math.PI);
-    inputs.extensionAppliedVolts = extensionAppliedVolts;
-    inputs.extensionCurrentAmps = Math.abs(extensionSim.getCurrentDrawAmps());
+    inputs.extensionLeftConnected = true;
+    inputs.extensionLeftPositionMeters = extensionPosMeters;
+    inputs.extensionLeftVelocityMetersPerSec =
+        extensionLeftSim.getAngularVelocityRadPerSec() * METERS_PER_ROTATION / (2.0 * Math.PI);
+    inputs.extensionLeftAppliedVolts = extensionLeftAppliedVolts;
+    inputs.extensionLeftCurrentAmps = Math.abs(extensionLeftSim.getCurrentDrawAmps());
+
+    inputs.extensionRightConnected = true;
+    inputs.extensionRightPositionMeters = extensionPosMeters;
+    inputs.extensionRightVelocityMetersPerSec =
+        extensionLeftSim.getAngularVelocityRadPerSec() * METERS_PER_ROTATION / (2.0 * Math.PI);
+    inputs.extensionRightAppliedVolts = extensionLeftAppliedVolts;
+    inputs.extensionRightCurrentAmps = Math.abs(extensionLeftSim.getCurrentDrawAmps());
   }
 
   // ---- Roller ----
 
   @Override
   public void setRollerVoltage(double volts) {
-    extensionClosedLoop = false;
+    extensionLeftClosedLoop = false;
+    extensionRightClosedLoop = false;
     rollerAppliedVolts = volts;
   }
 
@@ -109,16 +137,23 @@ public class IntakeIOSim implements IntakeIO {
 
   @Override
   public void setExtensionPosition(double positionMeters) {
-    extensionClosedLoop = true;
-    double clampedMeters =
+    extensionLeftClosedLoop = true;
+    extensionRightClosedLoop = true;
+    double clampedLeftMeters =
         MathUtil.clamp(positionMeters, 0.0, IntakeConstants.MAX_EXTENSION_METERS);
-    extensionSetpointRotations = clampedMeters / METERS_PER_ROTATION;
+    extensionLeftSetpointRotations = clampedLeftMeters / METERS_PER_ROTATION;
+
+    double clampedRightMeters =
+        MathUtil.clamp(positionMeters, 0.0, IntakeConstants.MAX_EXTENSION_METERS);
+    extensionRightSetpointRotations = clampedRightMeters / METERS_PER_ROTATION;
   }
 
   @Override
   public void setExtensionVoltage(double volts) {
-    extensionClosedLoop = false;
-    extensionAppliedVolts = volts;
+    extensionLeftClosedLoop = false;
+    extensionRightClosedLoop = false;
+    extensionLeftAppliedVolts = volts;
+    extensionRightAppliedVolts = volts;
   }
 
   @Override

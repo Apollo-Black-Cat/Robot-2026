@@ -8,22 +8,34 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.ConveyorCommands;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ShootingCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.conveyor.Conveyor;
+import frc.robot.subsystems.conveyor.ConveyorIO;
+import frc.robot.subsystems.conveyor.ConveyorIOSim;
+import frc.robot.subsystems.conveyor.ConveyorIOSpark;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIONavX;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOTalonFX;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -35,9 +47,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  // private final Intake intake;
-  // private final Conveyor conveyor;
-  // private final Shooter shooter;
+  private final Intake intake;
+  private final Conveyor conveyor;
+  private final Shooter shooter;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -59,6 +71,9 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
+        intake = new Intake(new IntakeIOTalonFX());
+        shooter = new Shooter(new ShooterIOTalonFX());
+        conveyor = new Conveyor(new ConveyorIOSpark());
         // intake = new Intake(new IntakeIOTalonFX());
         // conveyor = new Conveyor(new ConveyorIOTalonFX());
         // shooter = new Shooter(new ShooterIOTalonFX());
@@ -91,7 +106,9 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
-        // intake = new Intake(new IntakeIOSim());
+        intake = new Intake(new IntakeIOSim());
+        shooter = new Shooter(new ShooterIOSim());
+        conveyor = new Conveyor(new ConveyorIOSim());
         // conveyor = new Conveyor(new ConveyorIOSim());
         // shooter = new Shooter(new ShooterIOSim());
         break;
@@ -105,7 +122,10 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        // intake = new Intake(new IntakeIO() {});
+        intake = new Intake(null);
+        shooter = new Shooter(new ShooterIO() {});
+        conveyor = new Conveyor(new ConveyorIO() {});
+
         // conveyor = new Conveyor(new ConveyorIO() {});
         // shooter = new Shooter(new ShooterIO() {});
         break;
@@ -151,7 +171,7 @@ public class RobotContainer {
 
     // Lock to 0° when A button is held
     controller
-        .a()
+        .start()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
@@ -168,16 +188,24 @@ public class RobotContainer {
             DriveCommands.joystickDriveAimAtHub(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
 
-    // Reset gyro to 0° when B button is pressed
+    /*intake.setDefaultCommand(
+    IntakeCommands.runIntake(
+        intake, () -> controller.getLeftTriggerAxis(), () -> controller.getRightTriggerAxis()));
+        */
+    controller.rightBumper().whileTrue(IntakeCommands.runRollers(intake, false));
+    controller.leftBumper().whileTrue(IntakeCommands.runRollers(intake, true));
+
     controller
-        .b()
+        .povRight()
         .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                    drive)
-                .ignoringDisable(true));
+            IntakeCommands.setDistance(intake, Constants.IntakeConstants.intakeExtendsPosition));
+    controller.povLeft().onTrue(IntakeCommands.setDistance(intake, 0.0));
+
+    controller.rightTrigger().whileTrue(ShootingCommands.runShooter(shooter));
+
+    controller.leftTrigger().whileTrue(ConveyorCommands.runConveyor(conveyor));
+
+    controller.povDown().onTrue(IntakeCommands.stopMotors(intake));
 
     // Extend + run rollers while right bumper is held; retract on release
     // Conveyor runs BACKWARD simultaneously to retain balls inside the robot

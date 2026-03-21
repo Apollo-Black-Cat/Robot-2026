@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -32,8 +33,9 @@ public final class Constants {
   /** Constants for the Intake subsystem. */
   public static final class IntakeConstants {
     // ---- CAN IDs ----
-    public static final int ROLLER_CAN_ID = 20;
-    public static final int EXTENSION_CAN_ID = 21;
+    public static final int ROLLER_CAN_ID = 15;
+    public static final int EXTENSIONLEFT_CAN_ID = 14;
+    public static final int EXTENSIONRIGHT_CAN_ID = 16;
 
     /** CAN bus name. Use "" or "rio" for the roboRIO bus, or "CANivore" if using a CANivore. */
     public static final String CAN_BUS = "rio";
@@ -57,7 +59,7 @@ public final class Constants {
     public static final double EXTENSION_GEAR_RATIO = 1.0;
 
     /** Maximum allowable extension travel in meters (233.749 mm). */
-    public static final double MAX_EXTENSION_METERS = 0.233749;
+    public static final double MAX_EXTENSION_METERS = 0.3;
 
     // ---- Extension PID / feedforward gains (to be tuned in robot) ----
     public static final double EXTENSION_KP = 40.0;
@@ -77,21 +79,32 @@ public final class Constants {
     public static final double EXTENSION_MM_JERK_RPS3 = 0.0;
 
     // ---- Roller preset voltages ----
-    public static final double ROLLER_INTAKE_VOLTS = 10.0;
+    public static final double ROLLER_INTAKE_VOLTS = 12.0;
     public static final double ROLLER_EJECT_VOLTS = -8.0;
+
+    public static final double intakeMaxSpeed = 1.0;
+
+    public static final double intakeExtendsPosition = 0.3;
+
+    public static final double drumRadius = Units.inchesToMeters(0.944);
   }
 
   /** Constants for the Conveyor subsystem. */
   public static final class ConveyorConstants {
     // ---- CAN IDs ----
-    public static final int MOTOR_CAN_ID = 30;
+    public static final int MOTOR_CAN_ID = 21;
 
     /** CAN bus name. Use "rio" for the roboRIO bus, or "CANivore" if using a CANivore. */
     public static final String CAN_BUS = "rio";
 
     // ---- Current limits ----
-    public static final double SUPPLY_CURRENT_LIMIT = 30.0; // amps
-    public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
+
+    public static final int currentLimit = 60;
+    public static final int motorReduction = 5;
+
+    public static final double maxVoltage = 5.0;
+
+    public static final boolean motorInverted = false;
 
     // ---- Preset voltages ----
     /** Voltage to run the conveyor toward the shooter (feeding/shooting). */
@@ -106,8 +119,10 @@ public final class Constants {
   /** Constants for the Shooter subsystem. */
   public static final class ShooterConstants {
     // ---- CAN IDs ----
-    public static final int FLYWHEEL_CAN_ID = 31;
-    public static final int FEEDER_CAN_ID = 32;
+    public static final int LEFTINDEXER_CAN_ID = 20;
+    public static final int RIGHTSHOOTER_CAN_ID = 18;
+    public static final int LEFTSHOOTER_CAN_ID = 19;
+    public static final int RIGHTINDEXER_CAN_ID = 17;
 
     /** CAN bus name. */
     public static final String CAN_BUS = "rio";
@@ -122,9 +137,9 @@ public final class Constants {
 
     // ---- Preset voltages ----
     /** Voltage applied to the flywheel motor during a shot. */
-    public static final double FLYWHEEL_SHOOT_VOLTS = 11.0;
+    public static final double FLYWHEEL_SHOOT_VOLTS = 8.0;
     /** Voltage applied to the feeder motor when feeding a ball into the flywheel. */
-    public static final double FEEDER_SHOOT_VOLTS = 8.0;
+    public static final double FEEDER_SHOOT_VOLTS = 6.0;
 
     // ---- Spin-up ----
     /**

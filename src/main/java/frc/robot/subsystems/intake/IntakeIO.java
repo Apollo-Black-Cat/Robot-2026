@@ -31,13 +31,22 @@ public interface IntakeIO {
     public double rollerCurrentAmps = 0.0;
 
     // ---------- Extension ----------
-    public boolean extensionConnected = false;
+    public boolean extensionLeftConnected = false;
     /** Current extension position in meters (0 = fully retracted). */
-    public double extensionPositionMeters = 0.0;
+    public double extensionLeftPositionMeters = 0.0;
 
-    public double extensionVelocityMetersPerSec = 0.0;
-    public double extensionAppliedVolts = 0.0;
-    public double extensionCurrentAmps = 0.0;
+    public double extensionLeftVelocityMetersPerSec = 0.0;
+    public double extensionLeftAppliedVolts = 0.0;
+    public double extensionLeftCurrentAmps = 0.0;
+    public double distance = 0.0;
+    // ---------- Extension ----------
+    public boolean extensionRightConnected = false;
+    /** Current extension position in meters (0 = fully retracted). */
+    public double extensionRightPositionMeters = 0.0;
+
+    public double extensionRightVelocityMetersPerSec = 0.0;
+    public double extensionRightAppliedVolts = 0.0;
+    public double extensionRightCurrentAmps = 0.0;
   }
 
   /** Updates the set of loggable inputs. */
@@ -50,6 +59,8 @@ public interface IntakeIO {
   /** Run the roller at the specified open-loop voltage (-12 to 12 V). */
   public default void setRollerVoltage(double volts) {}
 
+  public default void setIntakeVoltage(double volts) {}
+
   // -------------------------------------------------------------------------
   // Extension control
   // -------------------------------------------------------------------------
@@ -59,6 +70,10 @@ public interface IntakeIO {
    * enforce the 233.749 mm travel limit in hardware.
    */
   public default void setExtensionPosition(double positionMeters) {}
+
+  public default void stopMotors() {}
+
+  public default void setDistance(double distance) {}
 
   /** Run the extension motor at the specified open-loop voltage (-12 to 12 V). */
   public default void setExtensionVoltage(double volts) {}

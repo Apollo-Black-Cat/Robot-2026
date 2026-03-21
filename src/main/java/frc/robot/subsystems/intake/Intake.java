@@ -72,10 +72,10 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", inputs);
 
     // Apply roller voltage
-    io.setRollerVoltage(rollerRunning ? rollerVolts : 0.0);
+    // io.setRollerVoltage(rollerRunning ? rollerVolts : 0.0);
 
     // Apply extension goal (motor-side clamping is done in the IO layer)
-    io.setExtensionPosition(extensionGoalMeters);
+    // io.setExtensionPosition(extensionGoalMeters);
 
     // Telemetry
     Logger.recordOutput("Intake/ExtensionGoalMeters", extensionGoalMeters);
@@ -90,17 +90,17 @@ public class Intake extends SubsystemBase {
 
   /** Returns {@code true} when the extension is within 5 mm of the fully extended position. */
   public boolean isExtended() {
-    return Math.abs(inputs.extensionPositionMeters - EXTENDED_POSITION_METERS) < 0.005;
+    return Math.abs(inputs.extensionLeftPositionMeters - EXTENDED_POSITION_METERS) < 0.005;
   }
 
   /** Returns {@code true} when the extension is within 5 mm of the retracted position. */
   public boolean isRetracted() {
-    return Math.abs(inputs.extensionPositionMeters - RETRACTED_POSITION_METERS) < 0.005;
+    return Math.abs(inputs.extensionLeftPositionMeters - RETRACTED_POSITION_METERS) < 0.005;
   }
 
   /** Returns the current extension position in meters. */
   public double getExtensionPositionMeters() {
-    return inputs.extensionPositionMeters;
+    return inputs.extensionLeftPositionMeters;
   }
 
   /** Returns the current roller velocity in rad/s. */
@@ -165,6 +165,34 @@ public class Intake extends SubsystemBase {
     return this.startEnd(() -> io.setExtensionVoltage(volts), () -> io.setExtensionVoltage(0.0));
   }
 
+  public void extensionVoltage(double volts) {
+    io.setExtensionVoltage(volts);
+  }
+
+  public void rollerVoltage(boolean isOn) {
+    if (isOn) {
+      io.setRollerVoltage(rollerVolts);
+    } else {
+      io.setRollerVoltage(-rollerVolts);
+    }
+  }
+
+  public void stopRoller() {
+    io.setRollerVoltage(0.0);
+  }
+
+  public void setDistance(double distance) {
+    io.setExtensionPosition(distance);
+  }
+
+  public void stopMotors() {
+    io.stopMotors();
+  }
+
+  public double getDistance() {
+    return inputs.distance;
+  }
+
   /** Zeros the extension encoder (call when mechanism is physically at the retracted hard stop). */
   public Command zeroExtensionCommand() {
     return this.runOnce(
@@ -172,5 +200,13 @@ public class Intake extends SubsystemBase {
           io.resetExtensionEncoder();
           extensionGoalMeters = RETRACTED_POSITION_METERS;
         });
+  }
+
+  public void roller(Boolean isOn) {
+    if (isOn) {
+      io.setRollerVoltage(rollerVolts);
+    } else {
+      io.setRollerVoltage(-rollerVolts);
+    }
   }
 }

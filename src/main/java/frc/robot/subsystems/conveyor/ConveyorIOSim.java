@@ -38,7 +38,5 @@ public class ConveyorIOSim implements ConveyorIO {
   }
 
   @Override
-  public void setVoltage(double volts) {
-    appliedVolts = volts;
-  }
+  public void setVoltage() {}
 }

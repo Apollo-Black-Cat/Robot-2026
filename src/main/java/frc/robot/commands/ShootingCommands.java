@@ -9,7 +9,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.conveyor.Conveyor;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
@@ -60,6 +59,29 @@ public class ShootingCommands {
     return Commands.parallel(intake.retractCommand(), conveyor.stopCommand());
   }
 
+  public static Command runShooter(Shooter shooter) {
+    return Commands.runEnd(
+        () -> {
+          shooter.activateShoot(true);
+          shooter.activateIndexer(true);
+        },
+        () -> {
+          shooter.stopMotors();
+        },
+        shooter);
+  }
+
+  public static Command runIndexer(Shooter shooter) {
+    return Commands.runEnd(
+        () -> {
+          shooter.activateIndexer(true);
+        },
+        () -> {
+          shooter.stopMotors();
+        },
+        shooter);
+  }
+
   // ---------------------------------------------------------------------------
   // Shoot sequence
   // ---------------------------------------------------------------------------
@@ -81,6 +103,8 @@ public class ShootingCommands {
    * @param shooter the Shooter subsystem
    * @param conveyor the Conveyor subsystem
    */
+
+  /*
   public static Command shootSequenceCommand(Shooter shooter, Conveyor conveyor) {
     return Commands.parallel(
         // 1. Start spinning the flywheel immediately`
@@ -91,9 +115,12 @@ public class ShootingCommands {
             Commands.waitSeconds(ShooterConstants.FLYWHEEL_SPINUP_SECONDS),
             Commands.parallel(shooter.runFeederCommand(), conveyor.runForwardCommand())));
   }
+            */
 
   /** Stops the entire shooter + conveyor system. */
+  /*
   public static Command stopShooterSystem(Shooter shooter, Conveyor conveyor) {
     return Commands.parallel(shooter.stopCommand(), conveyor.stopCommand());
   }
+    */
 }

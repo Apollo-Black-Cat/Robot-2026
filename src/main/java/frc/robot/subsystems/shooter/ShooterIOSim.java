@@ -15,55 +15,70 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 /** Physics simulation implementation of the Shooter IO. */
 public class ShooterIOSim implements ShooterIO {
 
-  private static final DCMotor FLYWHEEL_GEARBOX = DCMotor.getKrakenX60Foc(1);
-  private static final DCMotor FEEDER_GEARBOX = DCMotor.getKrakenX60Foc(1);
+  private static final DCMotor LEFT_SHOOTER_GEARBOX = DCMotor.getKrakenX60Foc(1);
+  private static final DCMotor RIGHT_SHOOTER_GEARBOX = DCMotor.getKrakenX60Foc(1);
+  private static final DCMotor INDEXER_GEARBOX = DCMotor.getKrakenX60Foc(1);
 
-  private static final double FLYWHEEL_MOI = 0.008; // kg·m² – represents heavy flywheel
-  private static final double FEEDER_MOI = 0.001; // kg·m²
+  private static final double SHOOTER_MOI = 0.008; // kg·m² – represents heavy flywheel
+  private static final double INDEXER_MOI = 0.001; // kg·m²
   private static final double GEAR_RATIO = 1.0;
 
-  private final DCMotorSim flywheelSim;
-  private final DCMotorSim feederSim;
+  private final DCMotorSim leftShooterSim;
+  private final DCMotorSim rightShooterSim;
+  private final DCMotorSim indexerSim;
 
-  private double flywheelAppliedVolts = 0.0;
-  private double feederAppliedVolts = 0.0;
+  private double leftShooterAppliedVolts = 0.0;
+  private double rightShooterAppliedVolts = 0.0;
+  private double indexerAppliedVolts = 0.0;
 
   public ShooterIOSim() {
-    flywheelSim =
+    leftShooterSim =
         new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(FLYWHEEL_GEARBOX, FLYWHEEL_MOI, GEAR_RATIO),
-            FLYWHEEL_GEARBOX);
-    feederSim =
+            LinearSystemId.createDCMotorSystem(LEFT_SHOOTER_GEARBOX, SHOOTER_MOI, GEAR_RATIO),
+            LEFT_SHOOTER_GEARBOX);
+    rightShooterSim =
         new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(FEEDER_GEARBOX, FEEDER_MOI, GEAR_RATIO),
-            FEEDER_GEARBOX);
+            LinearSystemId.createDCMotorSystem(RIGHT_SHOOTER_GEARBOX, SHOOTER_MOI, GEAR_RATIO),
+            RIGHT_SHOOTER_GEARBOX);
+    indexerSim =
+        new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(INDEXER_GEARBOX, INDEXER_MOI, GEAR_RATIO),
+            INDEXER_GEARBOX);
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    flywheelSim.setInputVoltage(MathUtil.clamp(flywheelAppliedVolts, -12.0, 12.0));
-    feederSim.setInputVoltage(MathUtil.clamp(feederAppliedVolts, -12.0, 12.0));
-    flywheelSim.update(0.02);
-    feederSim.update(0.02);
+    leftShooterSim.setInputVoltage(MathUtil.clamp(leftShooterAppliedVolts, -12.0, 12.0));
+    rightShooterSim.setInputVoltage(MathUtil.clamp(leftShooterAppliedVolts, -12.0, 12.0));
+    indexerSim.setInputVoltage(MathUtil.clamp(indexerAppliedVolts, -12.0, 12.0));
+    leftShooterSim.update(0.02);
+    rightShooterSim.update(0.02);
+    indexerSim.update(0.02);
 
-    inputs.flywheelConnected = true;
-    inputs.flywheelVelocityRadPerSec = flywheelSim.getAngularVelocityRadPerSec();
-    inputs.flywheelAppliedVolts = flywheelAppliedVolts;
-    inputs.flywheelCurrentAmps = Math.abs(flywheelSim.getCurrentDrawAmps());
+    inputs.leftShooterConnected = true;
+    inputs.leftShooterVelocityRadPerSec = leftShooterSim.getAngularVelocityRadPerSec();
+    inputs.leftShooterAppliedVolts = leftShooterAppliedVolts;
+    inputs.leftShooterCurrentAmps = Math.abs(leftShooterSim.getCurrentDrawAmps());
 
-    inputs.feederConnected = true;
-    inputs.feederVelocityRadPerSec = feederSim.getAngularVelocityRadPerSec();
-    inputs.feederAppliedVolts = feederAppliedVolts;
-    inputs.feederCurrentAmps = Math.abs(feederSim.getCurrentDrawAmps());
+    inputs.rightShooterConnected = true;
+    inputs.rightShooterVelocityRadPerSec = rightShooterSim.getAngularVelocityRadPerSec();
+    inputs.rightShooterAppliedVolts = rightShooterAppliedVolts;
+    inputs.rightShooterCurrentAmps = Math.abs(rightShooterSim.getCurrentDrawAmps());
+
+    inputs.leftIndexerConnected = true;
+    inputs.leftIndexerVelocityRadPerSec = indexerSim.getAngularVelocityRadPerSec();
+    inputs.leftIndexerAppliedVolts = indexerAppliedVolts;
+    inputs.leftIndexerCurrentAmps = Math.abs(indexerSim.getCurrentDrawAmps());
   }
 
   @Override
-  public void setFlywheelVoltage(double volts) {
-    flywheelAppliedVolts = volts;
+  public void setShooterVoltage(double volts) {
+    leftShooterAppliedVolts = volts;
+    rightShooterAppliedVolts = volts;
   }
 
   @Override
-  public void setFeederVoltage(double volts) {
-    feederAppliedVolts = volts;
+  public void setIndexerVoltage(double volts) {
+    indexerAppliedVolts = volts;
   }
 }
