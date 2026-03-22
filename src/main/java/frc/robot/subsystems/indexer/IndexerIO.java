@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.indexer;
 
 import org.littletonrobotics.junction.AutoLog;
 
@@ -21,10 +21,10 @@ import org.littletonrobotics.junction.AutoLog;
  *       into the spinning flywheel once it is at speed.
  * </ul>
  */
-public interface ShooterIO {
+public interface IndexerIO {
 
   @AutoLog
-  public static class ShooterIOInputs {
+  public static class IndexerIOInputs {
     // ---- left indexer ----
     public boolean leftIndexerConnected = false;
     public double leftIndexerVelocityRadPerSec = 0.0;
@@ -36,30 +36,13 @@ public interface ShooterIO {
     public double rightIndexerVelocityRadPerSec = 0.0;
     public double rightIndexerAppliedVolts = 0.0;
     public double rightIndexerCurrentAmps = 0.0;
-
-    // ---- left shooter ----
-    public boolean leftShooterConnected = false;
-    public double leftShooterVelocityRadPerSec = 0.0;
-    public double leftShooterAppliedVolts = 0.0;
-    public double leftShooterCurrentAmps = 0.0;
-
-    // ---- right shooter ----
-    public boolean rightShooterConnected = false;
-    public double rightShooterVelocityRadPerSec = 0.0;
-    public double rightShooterAppliedVolts = 0.0;
-    public double rightShooterCurrentAmps = 0.0;
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(ShooterIOInputs inputs) {}
-
-  /** Run the flywheel at the specified open-loop voltage (-12 to 12 V). */
-  public default void setShooterVoltage(double volts) {}
+  public default void updateInputs(IndexerIOInputs inputs) {}
 
   /** Run the feeder at the specified open-loop voltage (-12 to 12 V). */
   public default void setIndexerVoltage(double volts) {}
-
-  public default void stopShooterMotors() {}
 
   public default void stopIndexerMotors() {}
 }

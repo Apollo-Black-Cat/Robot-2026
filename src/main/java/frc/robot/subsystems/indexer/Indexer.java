@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.indexer;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,15 +36,14 @@ import org.littletonrobotics.junction.Logger;
  *
  * <p>The {@code shootCommand()} convenience method wires the full sequence together.
  */
-public class Shooter extends SubsystemBase {
+public class Indexer extends SubsystemBase {
 
-  private final ShooterIO io;
-  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+  private final IndexerIO io;
+  private final IndexerIOInputsAutoLogged inputs = new IndexerIOInputsAutoLogged();
 
-  private double shooterGoalVolts = 0.0;
   private double indexerGoalVolts = 0.0;
 
-  public Shooter(ShooterIO io) {
+  public Indexer(IndexerIO io) {
     this.io = io;
   }
 
@@ -52,22 +51,11 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
-
-    Logger.recordOutput("Shooter/FlywheelGoalVolts", shooterGoalVolts);
     Logger.recordOutput("Shooter/FeederGoalVolts", indexerGoalVolts);
-    Logger.recordOutput("Shooter/FlywheelAtSpeed", isFlywheelAtSpeed());
-  }
-
-  public void activateShoot(Boolean isOn) {
-    io.setShooterVoltage(Constants.ShooterConstants.FLYWHEEL_SHOOT_VOLTS);
   }
 
   public void activateIndexer(Boolean isOn) {
     io.setIndexerVoltage(Constants.ShooterConstants.FEEDER_SHOOT_VOLTS);
-  }
-
-  public void stopShooterMotors() {
-    io.stopShooterMotors();
   }
 
   public void stopIndexerMotors() {
@@ -88,21 +76,6 @@ public class Shooter extends SubsystemBase {
             });
   }
 
-  public Command runShooter() {
-    return run(() -> {
-          io.setShooterVoltage(Constants.ShooterConstants.FLYWHEEL_SHOOT_VOLTS);
-          ;
-        })
-        .handleInterrupt(
-            () -> {
-              io.stopShooterMotors();
-            })
-        .finallyDo(
-            () -> {
-              io.stopShooterMotors();
-            });
-  }
-
   // ---------------------------------------------------------------------------
   // State helpers
   // ---------------------------------------------------------------------------
@@ -111,17 +84,6 @@ public class Shooter extends SubsystemBase {
    * Returns {@code true} when the flywheel velocity is within the configured tolerance of the
    * target speed for shooting.
    */
-  public boolean isFlywheelAtSpeed() {
-    return Math.abs(inputs.leftShooterVelocityRadPerSec)
-        >= ShooterConstants.FLYWHEEL_TARGET_RAD_PER_SEC
-            * (1.0 - ShooterConstants.FLYWHEEL_TOLERANCE_PERCENT);
-  }
-
-  /** Returns the current flywheel velocity in rad/s. */
-  public double getFlywheelVelocityRadPerSec() {
-    return inputs.leftShooterVelocityRadPerSec;
-  }
-
   // ---------------------------------------------------------------------------
   // Commands
   // ---------------------------------------------------------------------------

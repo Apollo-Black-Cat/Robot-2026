@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.indexer;
 
 import static frc.robot.util.PhoenixUtil.*;
 
@@ -23,7 +23,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.ShooterConstants;
 
 /** TalonFX implementation of the Shooter IO (flywheel + feeder). */
-public class ShooterIOTalonFX implements ShooterIO {
+public class IndexerIOTalonFX implements IndexerIO {
 
   // ---- Hardware ----
   private final TalonFX leftShooterTalon;
@@ -33,7 +33,6 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   // ---- Control requests ----
   private final VoltageOut indexerVoltageRequest = new VoltageOut(0.0).withEnableFOC(true);
-  private final VoltageOut leftShooterVoltageRequest = new VoltageOut(0.0).withEnableFOC(true);
   // private final VoltageOut rightShooterVoltageRequest = new VoltageOut(0.0).withEnableFOC(true);
 
   // ---- Status signals – indexer ----
@@ -58,10 +57,8 @@ public class ShooterIOTalonFX implements ShooterIO {
   // ---- Debouncers ----
   private final Debouncer leftIndexerConnectedDebouncer = new Debouncer(0.5);
   private final Debouncer rightIndexerConnectedDebouncer = new Debouncer(0.5);
-  private final Debouncer leftShooterConnectedDebouncer = new Debouncer(0.5);
-  private final Debouncer rightShooterConnectedDebouncer = new Debouncer(0.5);
 
-  public ShooterIOTalonFX() {
+  public IndexerIOTalonFX() {
     leftIndexerTalon = new TalonFX(ShooterConstants.LEFTINDEXER_CAN_ID);
     rightIndexerTalon = new TalonFX(ShooterConstants.RIGHTINDEXER_CAN_ID);
     leftShooterTalon = new TalonFX(ShooterConstants.LEFTSHOOTER_CAN_ID);
@@ -130,19 +127,13 @@ public class ShooterIOTalonFX implements ShooterIO {
   }
 
   @Override
-  public void updateInputs(ShooterIOInputs inputs) {
+  public void updateInputs(IndexerIOInputs inputs) {
     var rightIndexerStatus =
         BaseStatusSignal.refreshAll(
             rightIndexerVelocity, rightIndexerAppliedVolts, rightIndexerCurrent);
     var leftIndexerStatus =
         BaseStatusSignal.refreshAll(
             leftIndexerVelocity, leftIndexerAppliedVolts, leftIndexerCurrent);
-    var leftShooterStatus =
-        BaseStatusSignal.refreshAll(
-            leftShooterVelocity, leftShooterAppliedVolts, leftShooterCurrent);
-    var rightShooterStatus =
-        BaseStatusSignal.refreshAll(
-            rightShooterVelocity, rightShooterAppliedVolts, rightShooterCurrent);
 
     inputs.leftIndexerConnected = leftIndexerConnectedDebouncer.calculate(leftIndexerStatus.isOK());
     inputs.leftIndexerVelocityRadPerSec =
@@ -156,37 +147,12 @@ public class ShooterIOTalonFX implements ShooterIO {
         edu.wpi.first.math.util.Units.rotationsToRadians(rightIndexerVelocity.getValueAsDouble());
     inputs.rightIndexerAppliedVolts = rightIndexerAppliedVolts.getValueAsDouble();
     inputs.rightIndexerCurrentAmps = rightIndexerCurrent.getValueAsDouble();
-
-    inputs.leftShooterConnected = leftShooterConnectedDebouncer.calculate(leftShooterStatus.isOK());
-    inputs.leftShooterVelocityRadPerSec =
-        edu.wpi.first.math.util.Units.rotationsToRadians(leftShooterVelocity.getValueAsDouble());
-    inputs.leftShooterAppliedVolts = leftShooterAppliedVolts.getValueAsDouble();
-    inputs.leftShooterCurrentAmps = leftShooterCurrent.getValueAsDouble();
-
-    inputs.rightShooterConnected =
-        rightShooterConnectedDebouncer.calculate(rightShooterStatus.isOK());
-    inputs.rightShooterVelocityRadPerSec =
-        edu.wpi.first.math.util.Units.rotationsToRadians(rightShooterVelocity.getValueAsDouble());
-    inputs.rightShooterAppliedVolts = rightShooterAppliedVolts.getValueAsDouble();
-    inputs.rightShooterCurrentAmps = rightShooterCurrent.getValueAsDouble();
-  }
-
-  @Override
-  public void setShooterVoltage(double volts) {
-    leftShooterTalon.setControl(leftShooterVoltageRequest.withOutput(volts));
-    rightShooterTalon.setControl(leftShooterTalon.getAppliedControl());
   }
 
   @Override
   public void setIndexerVoltage(double volts) {
     leftIndexerTalon.setControl(indexerVoltageRequest.withOutput(volts));
     rightIndexerTalon.setControl(leftIndexerTalon.getAppliedControl());
-  }
-
-  @Override
-  public void stopShooterMotors() {
-    leftShooterTalon.stopMotor();
-    rightShooterTalon.stopMotor();
   }
 
   @Override

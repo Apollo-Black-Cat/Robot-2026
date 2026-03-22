@@ -79,12 +79,12 @@ public final class Constants {
     public static final double EXTENSION_MM_JERK_RPS3 = 0.0;
 
     // ---- Roller preset voltages ----
-    public static final double ROLLER_INTAKE_VOLTS = 12.0;
+    public static final double ROLLER_INTAKE_VOLTS = 6.0;
     public static final double ROLLER_EJECT_VOLTS = -8.0;
 
     public static final double intakeMaxSpeed = 1.0;
 
-    public static final double intakeExtendsPosition = 0.3;
+    public static final double intakeExtendsPosition = 0.23;
 
     public static final double drumRadius = Units.inchesToMeters(0.944);
   }
@@ -137,7 +137,7 @@ public final class Constants {
 
     // ---- Preset voltages ----
     /** Voltage applied to the flywheel motor during a shot. */
-    public static final double FLYWHEEL_SHOOT_VOLTS = 8.0;
+    public static final double FLYWHEEL_SHOOT_VOLTS = 12.0;
     /** Voltage applied to the feeder motor when feeding a ball into the flywheel. */
     public static final double FEEDER_SHOOT_VOLTS = 6.0;
 

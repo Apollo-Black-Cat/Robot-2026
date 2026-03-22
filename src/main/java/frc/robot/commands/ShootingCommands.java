@@ -9,7 +9,11 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.conveyor.Conveyor;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 
@@ -63,10 +67,10 @@ public class ShootingCommands {
     return Commands.runEnd(
         () -> {
           shooter.activateShoot(true);
-          shooter.activateIndexer(true);
+          // shooter.activateIndexer(true);
         },
         () -> {
-          shooter.stopMotors();
+          shooter.stopShooterMotors();
         },
         shooter);
   }
@@ -77,9 +81,17 @@ public class ShootingCommands {
           shooter.activateIndexer(true);
         },
         () -> {
-          shooter.stopMotors();
+          shooter.stopIndexerMotors();
         },
         shooter);
+  }
+
+  public static Command shoot(Conveyor conveyor, Shooter shooter, Indexer indexer) {
+    return Commands.parallel(
+        shooter.runShooter(),
+        new SequentialCommandGroup(
+            new WaitCommand(0.4),
+            new ParallelCommandGroup(conveyor.runConveyor(), indexer.runIndexer())));
   }
 
   // ---------------------------------------------------------------------------

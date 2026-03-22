@@ -148,10 +148,10 @@ public class IntakeIOTalonFX implements IntakeIO {
     extensionLeftVelocity = extensionLeftTalon.getVelocity();
     extensionLeftAppliedVolts = extensionLeftTalon.getMotorVoltage();
     extensionLeftCurrent = extensionLeftTalon.getSupplyCurrent();
-    extensionRightPosition = extensionLeftTalon.getPosition();
-    extensionRightVelocity = extensionLeftTalon.getVelocity();
-    extensionRightAppliedVolts = extensionLeftTalon.getMotorVoltage();
-    extensionRightCurrent = extensionLeftTalon.getSupplyCurrent();
+    extensionRightPosition = extensionRightTalon.getPosition();
+    extensionRightVelocity = extensionRightTalon.getVelocity();
+    extensionRightAppliedVolts = extensionRightTalon.getMotorVoltage();
+    extensionRightCurrent = extensionRightTalon.getSupplyCurrent();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,

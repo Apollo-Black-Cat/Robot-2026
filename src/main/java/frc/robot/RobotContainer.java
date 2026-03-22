@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.ConveyorCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShootingCommands;
@@ -29,6 +28,10 @@ import frc.robot.subsystems.drive.GyroIONavX;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOSim;
+import frc.robot.subsystems.indexer.IndexerIOTalonFX;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOTalonFX;
@@ -48,6 +51,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Intake intake;
+  private final Indexer indexer;
   private final Conveyor conveyor;
   private final Shooter shooter;
 
@@ -72,6 +76,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         intake = new Intake(new IntakeIOTalonFX());
+        indexer = new Indexer(new IndexerIOTalonFX());
         shooter = new Shooter(new ShooterIOTalonFX());
         conveyor = new Conveyor(new ConveyorIOSpark());
         // intake = new Intake(new IntakeIOTalonFX());
@@ -107,6 +112,7 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
         intake = new Intake(new IntakeIOSim());
+        indexer = new Indexer(new IndexerIOSim());
         shooter = new Shooter(new ShooterIOSim());
         conveyor = new Conveyor(new ConveyorIOSim());
         // conveyor = new Conveyor(new ConveyorIOSim());
@@ -125,6 +131,7 @@ public class RobotContainer {
         intake = new Intake(null);
         shooter = new Shooter(new ShooterIO() {});
         conveyor = new Conveyor(new ConveyorIO() {});
+        indexer = new Indexer(new IndexerIO() {});
 
         // conveyor = new Conveyor(new ConveyorIO() {});
         // shooter = new Shooter(new ShooterIO() {});
@@ -201,9 +208,9 @@ public class RobotContainer {
             IntakeCommands.setDistance(intake, Constants.IntakeConstants.intakeExtendsPosition));
     controller.povLeft().onTrue(IntakeCommands.setDistance(intake, 0.0));
 
-    controller.rightTrigger().whileTrue(ShootingCommands.runShooter(shooter));
+    // controller.rightTrigger().whileTrue(ShootingCommands.runShooter(shooter));
 
-    controller.leftTrigger().whileTrue(ConveyorCommands.runConveyor(conveyor));
+    controller.rightTrigger().whileTrue(ShootingCommands.shoot(conveyor, shooter, indexer));
 
     controller.povDown().onTrue(IntakeCommands.stopMotors(intake));
 

@@ -52,6 +52,20 @@ public class Conveyor extends SubsystemBase {
     io.stopMotor();
   }
 
+  public Command runConveyor() {
+    return run(() -> {
+          io.setVoltage();
+        })
+        .handleInterrupt(
+            () -> {
+              io.stopMotor();
+            })
+        .finallyDo(
+            () -> {
+              io.stopMotor();
+            });
+  }
+
   // ---------------------------------------------------------------------------
   // State helpers
   // ---------------------------------------------------------------------------
