@@ -61,8 +61,8 @@ public class Drive extends SubsystemBase {
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
   // PathPlanner config constants
-  private static final double ROBOT_MASS_KG = 74.088;
-  private static final double ROBOT_MOI = 6.883;
+  private static final double ROBOT_MASS_KG = 35;
+  private static final double ROBOT_MOI = 16.42;
   private static final double WHEEL_COF = 1.2;
   private static final RobotConfig PP_CONFIG =
       new RobotConfig(
@@ -192,8 +192,8 @@ public class Drive extends SubsystemBase {
 
       // Update gyro angle
       if (gyroInputs.connected) {
-        // Use the real gyro angle
-        rawGyroRotation = gyroInputs.odometryYawPositions[i];
+        // Use the real gyro angle (invertido para corregir frame de odometría)
+        rawGyroRotation = gyroInputs.odometryYawPositions[i].unaryMinus();
       } else {
         // Use the angle delta from the kinematics and module deltas
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
