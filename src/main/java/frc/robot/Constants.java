@@ -46,7 +46,7 @@ public final class Constants {
 
     // ---- Extension current limits ----
     public static final double EXTENSION_SUPPLY_CURRENT_LIMIT = 30.0; // amps
-    public static final double EXTENSION_STATOR_CURRENT_LIMIT = 60.0; // amps
+    public static final double EXTENSION_STATOR_CURRENT_LIMIT_IN = 80.0; // amps
 
     // ---- Rack-and-pinion geometry ----
     /** Pinion pitch diameter in meters (51.985 mm). */
@@ -59,12 +59,12 @@ public final class Constants {
     public static final double EXTENSION_GEAR_RATIO = 1.0;
 
     /** Maximum allowable extension travel in meters (233.749 mm). */
-    public static final double MAX_EXTENSION_METERS = 0.3;
+    public static final double MAX_EXTENSION_METERS = 0.26;
 
     // ---- Extension PID / feedforward gains (to be tuned in robot) ----
-    public static final double EXTENSION_KP = 40.0;
+    public static final double EXTENSION_KP = 80.0;
     public static final double EXTENSION_KI = 0.0;
-    public static final double EXTENSION_KD = 0.5;
+    public static final double EXTENSION_KD = 1.0;
     public static final double EXTENSION_KS = 0.25; // volts (static friction)
     public static final double EXTENSION_KV = 0.12; // volts·s/rot
     public static final double EXTENSION_KA = 0.01; // volts·s²/rot
@@ -84,7 +84,7 @@ public final class Constants {
 
     public static final double intakeMaxSpeed = 1.0;
 
-    public static final double intakeExtendsPosition = 0.23;
+    public static final double intakeExtendsPosition = 0.25;
 
     public static final double drumRadius = Units.inchesToMeters(0.944);
   }
@@ -137,7 +137,7 @@ public final class Constants {
 
     // ---- Preset voltages ----
     /** Voltage applied to the flywheel motor during a shot. */
-    public static final double FLYWHEEL_SHOOT_VOLTS = 12.0;
+    public static final double FLYWHEEL_SHOOT_VOLTS = 8.0;
     /** Voltage applied to the feeder motor when feeding a ball into the flywheel. */
     public static final double FEEDER_SHOOT_VOLTS = 6.0;
 

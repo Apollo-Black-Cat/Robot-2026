@@ -92,7 +92,7 @@ public class IntakeIOTalonFX implements IntakeIO {
 
     // ---- Configure roller ----
     TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
-    rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     rollerConfig.CurrentLimits.SupplyCurrentLimit = IntakeConstants.ROLLER_SUPPLY_CURRENT_LIMIT;
     rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     rollerConfig.CurrentLimits.StatorCurrentLimit = IntakeConstants.ROLLER_STATOR_CURRENT_LIMIT;
@@ -108,7 +108,7 @@ public class IntakeIOTalonFX implements IntakeIO {
         IntakeConstants.EXTENSION_SUPPLY_CURRENT_LIMIT;
     extensionConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     extensionConfig.CurrentLimits.StatorCurrentLimit =
-        IntakeConstants.EXTENSION_STATOR_CURRENT_LIMIT;
+        IntakeConstants.EXTENSION_STATOR_CURRENT_LIMIT_IN;
     extensionConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     // Software travel limits  (in rotations; 0 = retracted)
