@@ -8,6 +8,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -139,6 +140,32 @@ public class RobotContainer {
         // shooter = new Shooter(new ShooterIO() {});
         break;
     }
+
+    // Register Named Commands
+    NamedCommands.registerCommand(
+        "IntakeBalls",
+        Commands.runEnd(
+            () -> {
+              intake.setDistance(Constants.IntakeConstants.intakeExtendsPosition);
+              intake.rollerVoltage(false);
+            },
+            () -> {
+              intake.stopMotors();
+            },
+            intake));
+
+    NamedCommands.registerCommand(
+        "StopAndRetractIntake",
+        Commands.run(
+                () -> {
+                  intake.stopRoller();
+                  intake.setDistance(0.0);
+                },
+                intake)
+            .until(intake::isRetracted));
+
+    NamedCommands.registerCommand(
+        "ShootAuto", ShootingCommands.shoot(conveyor, shooter, indexer).withTimeout(5));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

@@ -11,15 +11,40 @@
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "Second R"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Second R"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBalls"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopAndRetractIntake"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "Third R"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootAuto"
           }
         }
       ]

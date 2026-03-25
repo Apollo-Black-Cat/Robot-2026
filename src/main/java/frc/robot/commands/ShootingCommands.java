@@ -88,10 +88,16 @@ public class ShootingCommands {
 
   public static Command shoot(Conveyor conveyor, Shooter shooter, Indexer indexer) {
     return Commands.parallel(
-        shooter.runShooter(),
-        new SequentialCommandGroup(
-            new WaitCommand(1.0),
-            new ParallelCommandGroup(conveyor.runConveyor(), indexer.runIndexer())));
+            shooter.runShooter(),
+            new SequentialCommandGroup(
+                new WaitCommand(1.0),
+                new ParallelCommandGroup(conveyor.runConveyor(), indexer.runIndexer())))
+        .finallyDo(
+            () -> {
+              shooter.stopShooterMotors();
+              indexer.stopIndexerMotors();
+              conveyor.stopMotor();
+            });
   }
 
   // ---------------------------------------------------------------------------
