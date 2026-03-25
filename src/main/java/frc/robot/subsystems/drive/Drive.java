@@ -80,6 +80,7 @@ public class Drive extends SubsystemBase {
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
+  private Rotation2d gyroZero = Rotation2d.kZero;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
@@ -97,6 +98,23 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
+
+  private boolean invertHeading = false;
+
+  /** Set whether the robot's forward is inverted (adds 180° to relative heading). */
+  public void setInvertHeading(boolean invert) {
+    this.invertHeading = invert;
+  }
+
+  /** Toggle invertHeading. */
+  public void toggleInvertHeading() {
+    this.invertHeading = !this.invertHeading;
+  }
+
+  /** Returns whether heading is inverted. */
+  public boolean isInvertHeading() {
+    return this.invertHeading;
+  }
 
   public Drive(
       GyroIO gyroIO,
@@ -328,6 +346,14 @@ public class Drive extends SubsystemBase {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
+  public void setGyroZeroToCurrent() {
+    gyroZero = getRotation();
+  }
+
+  public Rotation2d getGyroZero() {
+    return gyroZero;
+  }
+
   /** Adds a new timestamped vision measurement. */
   public void addVisionMeasurement(
       Pose2d visionRobotPoseMeters,
@@ -345,6 +371,18 @@ public class Drive extends SubsystemBase {
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
     return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
+  }
+
+  public Rotation2d getGyroRelativeRotation() {
+    Rotation2d rel = getRotation().minus(gyroZero);
+    return invertHeading ? rel.plus(new Rotation2d(Math.PI)) : rel;
+  }
+
+  /**
+   * Returns robot rotation relative to gyro-zero but IGNORING invertHeading (for driver controls).
+   */
+  public Rotation2d getGyroRelativeRotationRaw() {
+    return getRotation().minus(gyroZero);
   }
 
   /** Returns an array of module translations. */

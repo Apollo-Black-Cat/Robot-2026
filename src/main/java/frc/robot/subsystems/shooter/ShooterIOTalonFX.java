@@ -12,9 +12,11 @@ import static frc.robot.util.PhoenixUtil.*;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -88,7 +90,7 @@ public class ShooterIOTalonFX implements ShooterIO {
     shooterConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     shooterConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     tryUntilOk(5, () -> leftShooterTalon.getConfigurator().apply(shooterConfig, 0.25));
-    shooterConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive);
+    shooterConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     tryUntilOk(5, () -> rightShooterTalon.getConfigurator().apply(shooterConfig, 0.25));
 
     // ---- Cache signals ----
@@ -173,8 +175,9 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   @Override
   public void setShooterVoltage(double volts) {
-    leftShooterTalon.setControl(leftShooterVoltageRequest.withOutput(volts));
-    rightShooterTalon.setControl(leftShooterTalon.getAppliedControl());
+    rightShooterTalon.setControl(leftShooterVoltageRequest.withOutput(volts));
+    leftShooterTalon.setControl(
+        new Follower(rightShooterTalon.getDeviceID(), MotorAlignmentValue.Opposed));
   }
 
   @Override
