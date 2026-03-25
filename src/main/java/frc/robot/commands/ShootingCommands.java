@@ -90,7 +90,7 @@ public class ShootingCommands {
     return Commands.parallel(
         shooter.runShooter(),
         new SequentialCommandGroup(
-            new WaitCommand(0.4),
+            new WaitCommand(1.0),
             new ParallelCommandGroup(conveyor.runConveyor(), indexer.runIndexer())));
   }
 
