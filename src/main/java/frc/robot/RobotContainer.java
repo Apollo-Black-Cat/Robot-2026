@@ -58,8 +58,9 @@ public class RobotContainer {
   private final Conveyor conveyor;
   private final Shooter shooter;
 
-  // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  // Controllers
+  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandXboxController operatorController = new CommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -197,15 +198,20 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    // -------------------------------------------------------------------------
+    // DRIVER CONTROLLER (Port 0) - Orientado solo a movimiento/conducción
+    // -------------------------------------------------------------------------
+
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
 
-    controller
+    // Resetear odometría/giroscopio (Botón B)
+    driverController
         .b()
         .onTrue(
             Commands.runOnce(
@@ -215,62 +221,43 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // Lock to 0° when A button is held
-    controller
+    // Bloquear el robot a 0° al apuntar hacia adelante (Botón Start/Menu)
+    driverController
         .start()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
                 () -> Rotation2d.kZero));
 
-    // Switch to X pattern when X button is pressed
-    // Toggle hub auto-aiming on/off with X button (single press activates, second press
-    // deactivates)
-    controller
+    // Modo auto-apuntado hacia la bocina o un objetivo (Botón X) (Activa/Desactiva)
+    driverController
         .x()
         .toggleOnTrue(
             DriveCommands.joystickDriveAimAtHub(
-                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
-    /*intake.setDefaultCommand(
-    IntakeCommands.runIntake(
-        intake, () -> controller.getLeftTriggerAxis(), () -> controller.getRightTriggerAxis()));
-        */
-    controller.rightBumper().whileTrue(IntakeCommands.runRollers(intake, false));
-    controller.leftBumper().whileTrue(IntakeCommands.runRollers(intake, true));
+    // -------------------------------------------------------------------------
+    // OPERATOR CONTROLLER (Port 1) - Orientado solo a mecanismos (Intake, Shooter)
+    // -------------------------------------------------------------------------
 
-    controller
+    // Rodillos del Intake (Bumpers)
+    operatorController.rightBumper().whileTrue(IntakeCommands.runRollers(intake, false));
+    operatorController.leftBumper().whileTrue(IntakeCommands.runRollers(intake, true));
+
+    // Desplegar y Contraer Intake (D-Pad Derecha/Izquierda)
+    operatorController
         .povRight()
         .onTrue(
             IntakeCommands.setDistance(intake, Constants.IntakeConstants.intakeExtendsPosition));
-    controller.povLeft().onTrue(IntakeCommands.setDistance(intake, 0.0));
+    operatorController.povLeft().onTrue(IntakeCommands.setDistance(intake, 0.0));
+    
+    // Apagar motores del Intake (D-pad Abajo)
+    operatorController.povDown().onTrue(IntakeCommands.stopMotors(intake));
 
-    // controller.rightTrigger().whileTrue(ShootingCommands.runShooter(shooter));
-
-    controller.rightTrigger().whileTrue(ShootingCommands.shoot(conveyor, shooter, indexer));
-
-    controller.povDown().onTrue(IntakeCommands.stopMotors(intake));
-
-    // Extend + run rollers while right bumper is held; retract on release
-    // Conveyor runs BACKWARD simultaneously to retain balls inside the robot
-    /*controller
-    .rightBumper()
-    .whileTrue(ShootingCommands.intakeWithRetainCommand(intake, conveyor))
-    .onFalse(ShootingCommands.retractAndStopCommand(intake, conveyor));*/
-
-    // Eject (reverse rollers) while left bumper is held
-    // controller.leftBumper().whileTrue(intake.ejectCommand());
-
-    // Shoot sequence while Y button is held:
-    //   - Flywheel spins up immediately
-    //   - After 0.5 s: feeder + conveyor forward feed the ball into the flywheel
-    // Everything stops on release
-    /*controller
-    .y()
-    .whileTrue(ShootingCommands.shootSequenceCommand(shooter, conveyor))
-    .onFalse(ShootingCommands.stopShooterSystem(shooter, conveyor));*/
+    // Disparar secuencia completa (Shooter + indexer + conveyor) (Gatillo Derecho)
+    operatorController.rightTrigger().whileTrue(ShootingCommands.shoot(conveyor, shooter, indexer));
   }
 
   /**
